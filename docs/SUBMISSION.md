@@ -4,6 +4,16 @@
 
 ---
 
+## 📌 Submission Links & Credentials
+
+- **GitHub Repository:** [https://github.com/ankushkumar14092-dot/rootcauseai.git](https://github.com/ankushkumar14092-dot/rootcauseai.git)
+- **Live Demo URL:** [https://knitting-brain-ids-carmen.trycloudflare.com](https://knitting-brain-ids-carmen.trycloudflare.com)
+- **Local Run Instructions:** `docker compose up --build` (Zero API keys required)
+- **Hackathon Track:** Track 01 — Agents That Act on Connected Data
+- **Side Prize Track:** Best Technical Blog Post (`docs/BLOG_POST.md`)
+
+---
+
 ## 1. Executive Summary
 
 **RootCause AI** is an autonomous root-cause investigation agent built specifically for test regressions and CI/CD pipelines, powered by **FalkorDB** as its connected context and memory layer.

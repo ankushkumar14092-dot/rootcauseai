@@ -1,8 +1,21 @@
 # RootCause AI
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Cloudflare%20Tunnel-blue?style=for-the-badge&logo=cloudflare)](https://knitting-brain-ids-carmen.trycloudflare.com)
+[![FalkorDB](https://img.shields.io/badge/Powered%20By-FalkorDB-red?style=for-the-badge)](https://www.falkordb.com/)
+[![Track](https://img.shields.io/badge/Hackathon-Track%2001%20Submission-success?style=for-the-badge)](https://www.wemakedevs.org/hackathons/falkordb)
+
+> **Live Demo URL:** [https://knitting-brain-ids-carmen.trycloudflare.com](https://knitting-brain-ids-carmen.trycloudflare.com)  
+> *(Zero installation required for judges — live interactive UI with FalkorDB graph reasoning)*
+
 RootCause AI investigates a synthetic CI regression by following its relationships through **FalkorDB**. It connects a failing test to the function it exercises, the source file where that function lives, and commits that changed the function. It ranks candidate causes, shows the graph evidence behind each claim, remembers investigations in the graph, and can run one fixed regression check in an isolated subprocess.
 
 The graph is the product's working context: investigation, candidate ranking, and memory all depend on FalkorDB traversals. The app has no relational or document-store fallback.
+
+## 🚀 Live Demo & Deployment
+
+- **Live URL:** [https://knitting-brain-ids-carmen.trycloudflare.com](https://knitting-brain-ids-carmen.trycloudflare.com)
+- **FalkorDB Web Visualizer:** Available locally at `http://localhost:3000`
+- **MCP Server Endpoint:** `python3 -m app.mcp_server` (stdio JSON-RPC with 5 tools)
 
 ## Run locally
 
