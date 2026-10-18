@@ -5,3 +5,5 @@ venv/
 .env
 *.py[cod]
 .DS_Store
+bin/
+*.log
