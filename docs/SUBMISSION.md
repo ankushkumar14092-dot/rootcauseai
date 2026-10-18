@@ -57,6 +57,55 @@ Instead of flat CI logs or hallucinated guesses, RootCause AI:
 - **`AgentMemory`**: `{text, kind, at}`
 - **`Validation`**: `{id, status, output, at}`
 
+```mermaid
+classDiagram
+    direction LR
+    class TestRun {
+        +string id
+        +string workflow
+        +string branch
+        +string at
+    }
+    class Failure {
+        +string id
+        +string message
+        +string exception
+        +int line
+    }
+    class Test {
+        +string id
+        +string name
+        +string status
+    }
+    class Function {
+        +string name
+        +string symbol
+    }
+    class File {
+        +string path
+        +string repository
+    }
+    class Commit {
+        +string sha
+        +string message
+        +string author
+        +string at
+    }
+    class Validation {
+        +string id
+        +string status
+        +string output
+    }
+
+    TestRun --> Failure : CONTAINS_FAILURE
+    Failure --> Test : FAILED_TEST
+    Test --> Function : EXERCISES
+    Function --> File : DEFINED_IN
+    Commit --> Function : CHANGED
+    Commit --> File : CHANGED_FILE
+    Commit --> Validation : CHECKED_BY
+```
+
 ### Core Cypher Queries
 
 #### A. Multi-Hop Investigation Traversal

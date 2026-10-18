@@ -41,6 +41,25 @@ Python 3.12 is used in the app container. Local settings can be changed with the
 
 ## Investigation flow
 
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Dev as Developer / CI Trigger
+    participant Agent as RootCause Agent (MCP)
+    participant Falkor as FalkorDB Engine
+    participant Sandbox as Isolated Sandbox
+
+    Dev->>Agent: Query: "Why did the checkout test fail?"
+    Agent->>Falkor: Cypher: trace_failure_path(failure_id)
+    Falkor-->>Agent: Failure -> Test -> Function -> File <- Commit
+    Agent->>Falkor: Cypher: analyze_blast_radius(function)
+    Falkor-->>Agent: Downstream test dependencies & risk score
+    Agent->>Sandbox: validate_candidate(commit_sha)
+    Sandbox-->>Agent: Isolated test result (PASSED ✓)
+    Agent->>Falkor: Record (:Investigation) & (:AgentMemory)
+    Agent-->>Dev: FACT vs INFERENCE Evidence + Verified Fix
+```
+
 1. The agent accepts a short natural-language question. It does not turn that text into Cypher.
 2. A bounded intent router selects from fixed tools: `trace_failure_path`, `recall_prior_investigation`, and `find_related_incidents`.
 3. Those tools run application-authored Cypher over the graph. The failure-to-test-to-function path gives the agent context that a flat CI log alone does not carry.

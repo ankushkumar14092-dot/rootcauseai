@@ -33,24 +33,21 @@ From day one, our primary design principle was aligned with Rule 3 of Graph Hack
 
 We modeled software engineering reality into a directional knowledge graph:
 
-```
-[TestRun] ──(:CONTAINS_FAILURE)──> [Failure]
-                                      │
-                              (:FAILED_TEST)
-                                      ▼
-                                   [Test]
-                                      │
-                                 (:EXERCISES)
-                                      ▼
-                                  [Function] ──(:DEFINED_IN)──> [File]
-                                      ▲
-                                  (:CHANGED)
-                                      │
-                                  [Commit] <──(:RESOLVED_BY)── [Incident]
-                                      │
-                                (:CHECKED_BY)
-                                      ▼
-                                 [Validation]
+```mermaid
+flowchart TD
+    TestRun["TestRun (Workflow, Branch, Timestamp)"] -->|CONTAINS_FAILURE| Failure["Failure (Assertion Error, Line, Stack)"]
+    Failure -->|FAILED_TEST| Test["Test (ID, Status)"]
+    Test -->|EXERCISES| Function["Function (AST Symbol)"]
+    Function -->|DEFINED_IN| File["File (Repository Source)"]
+    Commit["Commit (SHA, Author, Diff)"] -->|CHANGED| Function
+    Commit -->|CHANGED_FILE| File
+    Incident["Past Incident"] -->|RESOLVED_BY| Commit
+    Commit -->|CHECKED_BY| Validation["Sandbox Validation (Isolated Check)"]
+
+    classDef graphNode fill:#1e1e2e,stroke:#89b4fa,stroke-width:2px,color:#cdd6f4;
+    classDef highlight fill:#313244,stroke:#f38ba8,stroke-width:2px,color:#f38ba8;
+    class Failure,Commit highlight;
+    class TestRun,Test,Function,File,Incident,Validation graphNode;
 ```
 
 In FalkorDB, every hop is a pointer traversal running in sub-milliseconds over Redis-protocol storage. Instead of running 6 heavy SQL `JOIN`s or guessing with embeddings, our agent executes a multi-hop OpenCypher query:
@@ -69,6 +66,37 @@ In a single query, the agent connects the dots from the red assertion error dire
 ---
 
 ## What We Built During Graph Hacks
+
+```mermaid
+flowchart LR
+    subgraph CI["1. CI Pipeline"]
+        Log["Raw CI Log / Pytest Output"]
+    end
+
+    subgraph Core["2. Ingestion & FalkorDB Context Layer"]
+        Parser["AST & Log Parser"]
+        Falkor[("FalkorDB Graph Engine")]
+    end
+
+    subgraph Agent["3. Autonomous Multi-Hop Agent"]
+        MCP["Native MCP Server"]
+        Cypher["5-Hop Cypher Traversal"]
+        Blast["Blast Radius Algorithm"]
+        Evidence["FACT vs INFERENCE Engine"]
+    end
+
+    subgraph Action["4. Verifiable Action"]
+        Sandbox["Isolated Subprocess Runner"]
+        Memory[("Episodic Graph Memory")]
+    end
+
+    Log --> Parser --> Falkor
+    Falkor <--> Cypher
+    MCP <--> Cypher
+    Cypher --> Blast --> Evidence
+    Evidence --> Sandbox --> Memory
+    Memory --> Falkor
+```
 
 ### 1. Ingesting Raw CI/CD Logs on the Fly
 We didn't want a static demo with one hardcoded test. We engineered a flexible regex and AST parser (`app/parser.py`) capable of parsing real GitHub Actions console output, Pytest verbose runs, and Python tracebacks. 
