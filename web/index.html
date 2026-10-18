@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0a0a0d" />
+    <title>RootCause AI — Track 1: Agents That Act on Connected Data</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <a class="brand" href="/"><span class="brand-mark">r.</span><span>rootcause<span class="brand-ai"> ai</span></span></a>
+        
+        <div class="workspace-label">WORKSPACE</div>
+        <button class="workspace active" id="workspace-button">
+          <span class="repo-icon">⌘</span>
+          <span><b id="active-repo-name">checkout-service</b><small id="active-repo-sub">FalkorDB Context Layer</small></span>
+          <span class="dots">•••</span>
+        </button>
+
+        <div class="sidebar-section">
+          <span>INVESTIGATION & INGEST</span>
+          <button class="nav active" id="nav-investigate"><span>◉</span> New investigation</button>
+          <button class="nav" id="nav-ingest"><span>📥</span> Ingest CI Log <em class="badge-new">NEW</em></button>
+          <button class="nav" id="nav-visualizer"><span>🕸</span> Graph Visualizer <em class="badge-new">LIVE</em></button>
+          <button class="nav" id="nav-mcp"><span>⚡</span> MCP Server Hub <em class="badge-mcp">MCP</em></button>
+          <button class="nav" id="nav-failures"><span>⚑</span> Failures in graph <em id="failures-count">1</em></button>
+        </div>
+
+        <div class="sidebar-section">
+          <span>GRAPH CONTEXT</span>
+          <div class="graph-mini">
+            <div class="mini-node failure" title="Failure">!</div><i></i>
+            <div class="mini-node test" title="Test">T</div><i></i>
+            <div class="mini-node fn" title="Function">ƒ</div><i></i>
+            <div class="mini-node commit" title="Commit">⌘</div>
+          </div>
+          <p class="mini-caption">Failure → Test → Function → Commit</p>
+          <button class="nav" id="open-graph"><span>⌘</span> View graph schema</button>
+        </div>
+
+        <div class="sidebar-bottom">
+          <div class="db-status">
+            <span class="status-dot" id="status-dot"></span>
+            <span><b id="db-label">Connecting to graph</b><small>FalkorDB · rootcause</small></span>
+            <button id="refresh-status" title="Refresh connection" aria-label="Refresh connection">↻</button>
+          </div>
+          <div class="profile">
+            <div class="avatar">RC</div>
+            <span><b>Track 01 Agent</b><small>Acts on Connected Data</small></span>
+            <span class="dots">•••</span>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div class="crumb" id="breadcrumb">
+            <span id="crumb-repo">checkout-service</span> <span>/</span> <b id="crumb-view">New investigation</b>
+          </div>
+          <div class="top-actions">
+            <button class="header-action-btn" id="header-visualizer-btn"><span>🕸</span> Visual Graph</button>
+            <button class="header-action-btn" id="header-mcp-btn"><span>⚡</span> MCP Config</button>
+            <button class="header-action-btn" id="header-ingest-btn"><span>📥</span> Ingest Log</button>
+            <span class="local-badge" id="local-badge"><i></i> FalkorDB live</span>
+            <button class="icon-button" id="help-button" aria-label="About">?</button>
+          </div>
+        </header>
+
+        <!-- View 1: Welcome & Prompt Investigation -->
+        <section class="welcome" id="welcome">
+          <div class="eyebrow"><span class="eyebrow-line"></span> TRACK 01 · AGENTS THAT ACT ON CONNECTED DATA</div>
+          <h1>Find the change<br />behind the failure.</h1>
+          <p class="intro">
+            Connect CI test failures through FalkorDB to the functions they exercise, source files, and commits that changed them.<br class="desktop" />
+            Every hypothesis is backed by observable graph facts, blast radius analysis, and verified in an isolated check.
+          </p>
+
+          <div class="failure-picker" id="failure-picker-container">
+            <span class="picker-label">ACTIVE FAILURES IN FALKORDB GRAPH:</span>
+            <div class="picker-chips" id="picker-chips">
+              <!-- Populated dynamically via JS -->
+            </div>
+          </div>
+
+          <div class="prompt-box">
+            <div class="prompt-top">
+              <span class="sparkle">✳</span>
+              <span id="prompt-top-label">Ask about an observed test regression</span>
+              <span class="prompt-hint">↵ to run</span>
+            </div>
+            <textarea id="prompt" rows="2" placeholder="Why did test_checkout_rejects_expired_coupon fail?" aria-label="Describe the test failure"></textarea>
+            <div class="prompt-bottom">
+              <span id="prompt-suggestion">Try: “Why did test_checkout_rejects_expired_coupon fail?”</span>
+              <button class="primary" id="investigate">Investigate <span>↗</span></button>
+            </div>
+          </div>
+
+          <div class="feature-row">
+            <div>
+              <span class="feature-icon violet">⌘</span>
+              <span><b>Multi-hop Cypher Trace</b><small>Failure → Test → Function → Commit</small></span>
+            </div>
+            <div>
+              <span class="feature-icon green">◈</span>
+              <span><b>FACT vs INFERENCE</b><small>Observable evidence separated from hypotheses</small></span>
+            </div>
+            <div>
+              <span class="feature-icon amber">⚡</span>
+              <span><b>MCP Server Integration</b><small>Native Model Context Protocol tools</small></span>
+            </div>
+          </div>
+
+          <div class="seed-note">
+            <span>✦</span> Want to reset to the default demo scenario? <button id="seed-link">Reload Demo Graph</button>
+          </div>
+        </section>
+
+        <!-- View 2: CI/CD Log Ingestion View -->
+        <section class="ingest-view hidden" id="ingest-view">
+          <div class="result-heading">
+            <div>
+              <div class="eyebrow"><span class="eyebrow-line"></span> CI/CD LOG INGESTION & GRAPH PARSER</div>
+              <h1>Ingest CI/CD Log into FalkorDB</h1>
+            </div>
+            <button class="secondary" id="back-to-investigate">← Back to Investigate</button>
+          </div>
+
+          <div class="ingest-grid">
+            <div class="ingest-main-column">
+              <div class="card ingest-card">
+                <div class="card-kicker">
+                  <span>SAMPLE CI/CD PIPELINE RUNS</span>
+                  <small>Click to load realistic failure logs</small>
+                </div>
+                <div class="sample-pills" id="sample-pills">
+                  <!-- Injected via app.js -->
+                </div>
+
+                <div class="input-row">
+                  <div class="field-group">
+                    <label for="repo-input">Repository</label>
+                    <input type="text" id="repo-input" value="checkout-service" placeholder="repository-name" />
+                  </div>
+                </div>
+
+                <div class="log-editor-box">
+                  <div class="log-editor-header">
+                    <span>RAW CI/CD LOG (GitHub Actions, Pytest, or Unittest)</span>
+                    <button class="btn-text" id="clear-log-btn">Clear</button>
+                  </div>
+                  <textarea id="ci-log-input" rows="12" placeholder="Paste GitHub Actions console log, pytest failure traceback, or CI output here..."></textarea>
+                </div>
+
+                <div class="ingest-actions">
+                  <span class="ingest-tip">Extracts TestRun, Failure, Test, Function, File, and Commits automatically.</span>
+                  <button class="primary" id="btn-parse-ingest">
+                    <span>⚡ Ingest into FalkorDB</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Ingestion Result Summary -->
+              <div class="card ingest-result-card hidden" id="ingest-summary-card">
+                <div class="card-header">
+                  <div>
+                    <span class="section-icon green">✓</span>
+                    <div>
+                      <h2>Ingestion Complete</h2>
+                      <small id="ingest-summary-meta">Nodes and relationships linked in FalkorDB</small>
+                    </div>
+                  </div>
+                  <button class="primary" id="btn-investigate-ingested">
+                    Investigate This Failure <span>↗</span>
+                  </button>
+                </div>
+                <div class="ingest-stats-grid" id="ingest-stats-grid">
+                  <!-- Stats badges injected here -->
+                </div>
+                <div class="parsed-failure-details" id="parsed-failure-details">
+                  <!-- Failure items breakdown injected here -->
+                </div>
+              </div>
+            </div>
+
+            <aside class="ingest-side-column">
+              <article class="card">
+                <div class="card-kicker">SUPPORTED CI FORMATS</div>
+                <ul class="support-list">
+                  <li><b>GitHub Actions</b> <span>Workflow logs with checkout & pytest</span></li>
+                  <li><b>Pytest Output</b> <span>Short & verbose tracebacks (<code>FAILED tests/...</code>)</span></li>
+                  <li><b>Python Traceback</b> <span>Standard assertion & exception blocks</span></li>
+                  <li><b>Git Metadata</b> <span>Commit SHAs, authors, messages in CI steps</span></li>
+                </ul>
+              </article>
+
+              <article class="card">
+                <div class="card-kicker">GRAPH INGESTION PIPELINE</div>
+                <div class="pipeline-steps">
+                  <div class="step-item"><span class="step-num">1</span><span>Parse regex patterns for run, branch, tests & commits</span></div>
+                  <div class="step-item"><span class="step-num">2</span><span>Merge Repository, TestRun & Failure nodes</span></div>
+                  <div class="step-item"><span class="step-num">3</span><span>Map Test ➔ Function ➔ File code hierarchy</span></div>
+                  <div class="step-item"><span class="step-num">4</span><span>Link Commit ➔ CHANGED relationships</span></div>
+                  <div class="step-item"><span class="step-num">5</span><span>Queryable via OpenCypher multi-hop traversals</span></div>
+                </div>
+              </article>
+            </aside>
+          </div>
+        </section>
+
+        <!-- View 3: Investigation Results Report -->
+        <section class="results hidden" id="results">
+          <div class="result-heading">
+            <div>
+              <div class="eyebrow"><span class="eyebrow-line"></span> INVESTIGATION REPORT</div>
+              <h1 id="result-title">Regression analysis</h1>
+            </div>
+            <div class="heading-buttons">
+              <button class="secondary" id="view-in-graph-btn">🕸 View In Graph</button>
+              <button class="secondary" id="ingest-another-btn">📥 Ingest Log</button>
+              <button class="secondary" id="new-investigation">＋ New investigation</button>
+            </div>
+          </div>
+
+          <div class="result-grid">
+            <div class="report-column">
+              <article class="card answer-card">
+                <div class="card-kicker">
+                  <span class="sparkle">✳</span> AGENT HYPOTHESIS & SUMMARY
+                  <span class="tool-chip" id="tool-chip">1 graph tool</span>
+                </div>
+                <p id="answer"></p>
+                
+                <div class="visual-path-container">
+                  <div class="visual-path-label">GRAPH TRAVERSAL PATH:</div>
+                  <div class="trace-strip" id="trace-strip"></div>
+                </div>
+              </article>
+
+              <!-- Blast Radius & Graph Impact Card -->
+              <article class="card blast-radius-card" id="blast-radius-card">
+                <div class="card-header">
+                  <div>
+                    <span class="section-icon amber">💥</span>
+                    <div>
+                      <h2>Blast Radius & Dependency Impact Analysis</h2>
+                      <small>Downstream test and service risk calculated from FalkorDB graph</small>
+                    </div>
+                  </div>
+                  <span class="risk-badge" id="blast-risk-badge">HIGH RISK</span>
+                </div>
+                <div class="blast-grid">
+                  <div class="blast-stat">
+                    <span class="blast-num" id="blast-direct-tests">1</span>
+                    <span class="blast-lbl">Direct Tests</span>
+                  </div>
+                  <div class="blast-stat">
+                    <span class="blast-num" id="blast-sibling-fns">1</span>
+                    <span class="blast-lbl">Sibling Functions</span>
+                  </div>
+                  <div class="blast-stat">
+                    <span class="blast-num" id="blast-related-commits">1</span>
+                    <span class="blast-lbl">Related Commits</span>
+                  </div>
+                  <div class="blast-stat">
+                    <span class="blast-num" id="blast-risk-score">10</span>
+                    <span class="blast-lbl">Connectivity Score</span>
+                  </div>
+                </div>
+                <p class="blast-recommendation" id="blast-recommendation"></p>
+              </article>
+
+              <article class="card">
+                <div class="card-header">
+                  <div>
+                    <span class="section-icon violet">⌘</span>
+                    <div>
+                      <h2>Evidence trail</h2>
+                      <small>Every claim links to an observable graph fact</small>
+                    </div>
+                  </div>
+                  <span class="count" id="evidence-count">0 items</span>
+                </div>
+                <div class="evidence-list" id="evidence-list"></div>
+              </article>
+
+              <article class="card candidate-card">
+                <div class="card-header">
+                  <div>
+                    <span class="section-icon amber">⚑</span>
+                    <div>
+                      <h2>Candidate commits</h2>
+                      <small>Ranked by graph overlap, timing & changed functions</small>
+                    </div>
+                  </div>
+                  <span class="count">INFERRED CAUSES</span>
+                </div>
+                <div id="candidate-list"></div>
+              </article>
+            </div>
+
+            <aside class="context-column">
+              <article class="card failure-card">
+                <div class="card-kicker">FAILING TEST DETAIL</div>
+                <div class="test-status"><span>✕</span> Failed in CI</div>
+                <h3 id="test-name"></h3>
+                <div class="error-block">
+                  <span id="failure-exception-badge">AssertionError</span>
+                  <p id="failure-message"></p>
+                  <small id="failure-location"></small>
+                </div>
+                <div class="run-meta">
+                  <span>RUN CONTEXT</span>
+                  <b id="run-context-label">run-1842 · pull-request</b>
+                </div>
+              </article>
+
+              <article class="card memory-card">
+                <div class="card-header compact">
+                  <div>
+                    <span class="section-icon green">◈</span>
+                    <div>
+                      <h2>Graph memory & prior incidents</h2>
+                      <small>Context recalled from FalkorDB</small>
+                    </div>
+                  </div>
+                </div>
+                <div id="memory-content" class="memory-content">
+                  <p>Ask about history or similar incidents to recall previous investigations.</p>
+                </div>
+              </article>
+
+              <article class="card action-card">
+                <div class="card-kicker">NEXT STEP · VALIDATION</div>
+                <h3>Validate the leading hypothesis</h3>
+                <p>Run the regression check with candidate fix in an isolated subprocess. No repository files are changed.</p>
+                <button id="validate-button" class="validate-button">
+                  <span id="validate-btn-text">Run isolated check</span> <span>→</span>
+                </button>
+                <div class="validation-result hidden" id="validation-result"></div>
+              </article>
+            </aside>
+          </div>
+        </section>
+
+        <!-- View 4: Live Interactive Graph Visualizer -->
+        <section class="visualizer-view hidden" id="visualizer-view">
+          <div class="result-heading">
+            <div>
+              <div class="eyebrow"><span class="eyebrow-line"></span> INTERACTIVE FALKORDB TOPOLOGY</div>
+              <h1>Connected Graph Explorer</h1>
+            </div>
+            <div class="heading-buttons">
+              <button class="secondary" id="refresh-graph-btn">↻ Refresh Graph</button>
+              <button class="secondary" id="back-from-graph-btn">← Back</button>
+            </div>
+          </div>
+
+          <div class="visualizer-container">
+            <div class="canvas-wrapper">
+              <canvas id="graph-canvas"></canvas>
+              <div class="canvas-legend">
+                <span class="legend-item"><i class="dot fail"></i> Failure</span>
+                <span class="legend-item"><i class="dot test"></i> Test</span>
+                <span class="legend-item"><i class="dot fn"></i> Function</span>
+                <span class="legend-item"><i class="dot file"></i> File</span>
+                <span class="legend-item"><i class="dot commit"></i> Commit</span>
+                <span class="legend-item"><i class="dot inc"></i> Incident</span>
+              </div>
+              <div class="canvas-hint">Drag nodes to explore · Hover to inspect relationships</div>
+            </div>
+            <aside class="inspector-panel" id="inspector-panel">
+              <div class="card-kicker">NODE INSPECTOR</div>
+              <h3 id="inspector-node-title">Click a node to inspect</h3>
+              <p id="inspector-node-desc">Explore the live FalkorDB knowledge graph directly in your browser.</p>
+              <div class="inspector-props" id="inspector-props"></div>
+            </aside>
+          </div>
+        </section>
+
+        <!-- View 5: Model Context Protocol (MCP) Server Hub -->
+        <section class="mcp-view hidden" id="mcp-view">
+          <div class="result-heading">
+            <div>
+              <div class="eyebrow"><span class="eyebrow-line"></span> OFFICIAL TRACK 01 SPECIFICATION</div>
+              <h1>Model Context Protocol (MCP) Server</h1>
+            </div>
+            <button class="secondary" id="back-from-mcp-btn">← Back</button>
+          </div>
+
+          <div class="mcp-grid">
+            <div class="card">
+              <div class="card-kicker">TOOL SELECTION THROUGH MCP</div>
+              <h2>Connect Any AI Agent to RootCause AI</h2>
+              <p>
+                In compliance with the official Hackathon Track 01 focus (<em>"Tool selection through MCP"</em>),
+                RootCause AI provides a native Model Context Protocol server exposing all graph tools to external LLM agents.
+              </p>
+
+              <div class="code-block-header">
+                <span>CLAUDE DESKTOP / CURSOR / ANTIGRAVITY CONFIG</span>
+                <button class="btn-text" id="copy-mcp-btn">Copy JSON</button>
+              </div>
+              <pre class="code-snippet"><code>{
+  "mcpServers": {
+    "rootcause-ai": {
+      "command": "python3",
+      "args": ["-m", "app.mcp_server"],
+      "cwd": "/path/to/GRAPHAGENT"
+    }
+  }
+}</code></pre>
+            </div>
+
+            <div class="card">
+              <div class="card-kicker">EXPOSED MCP TOOLS</div>
+              <ul class="mcp-tool-list">
+                <li>
+                  <code>trace_failure_path</code>
+                  <span>Multi-hop Cypher traversal linking CI failures to changed commits.</span>
+                </li>
+                <li>
+                  <code>ingest_ci_log</code>
+                  <span>Parses raw GitHub Actions / Pytest logs and merges graph entities.</span>
+                </li>
+                <li>
+                  <code>analyze_blast_radius</code>
+                  <span>Graph algorithm computing downstream test & dependency blast radius.</span>
+                </li>
+                <li>
+                  <code>validate_candidate_fix</code>
+                  <span>Safe, bounded subprocess verification in an isolated sandbox.</span>
+                </li>
+                <li>
+                  <code>recall_memory</code>
+                  <span>Episodic memory & historical incident resolution retrieval.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <footer>
+          <span>RootCause AI <i>·</i> Track 01: Agents That Act on Connected Data</span>
+          <span>Powered by <b>FalkorDB Graph Engine</b></span>
+        </footer>
+      </main>
+    </div>
+
+    <!-- Graph Schema Dialog -->
+    <dialog id="graph-dialog">
+      <button class="close-dialog" id="close-dialog">×</button>
+      <div class="eyebrow"><span class="eyebrow-line"></span> FALKORDB DATA SCHEMA</div>
+      <h2>The graph is the investigation</h2>
+      <p>RootCause follows recorded relationships in FalkorDB. The graph connects CI runs, failures, tests, functions, files, commits, incidents, and episodic agent memory.</p>
+      <div class="model-list">
+        <code>(TestRun)-[:CONTAINS_FAILURE]→(Failure)-[:FAILED_TEST]→(Test)</code>
+        <code>(Test)-[:EXERCISES]→(Function)-[:DEFINED_IN]→(File)</code>
+        <code>(Commit)-[:CHANGED]→(Function)</code>
+        <code>(Commit)-[:CHANGED_FILE]→(File)</code>
+        <code>(Incident)-[:RESOLVED_BY]→(Commit)</code>
+        <code>(Investigation)-[:RECORDED]→(AgentMemory)</code>
+        <code>(Commit)-[:CHECKED_BY]→(Validation)</code>
+      </div>
+      <p class="dialog-note">The agent chooses from fixed tools with authored Cypher queries. User text is never treated as Cypher.</p>
+    </dialog>
+
+    <script src="/assets/app.js" defer></script>
+  </body>
+</html>
